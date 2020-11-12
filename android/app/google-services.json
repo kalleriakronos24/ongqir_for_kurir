@@ -1,0 +1,40 @@
+{
+    "project_info": {
+      "project_number": "375562150321",
+      "firebase_url": "https://ongqir-f67ad.firebaseio.com",
+      "project_id": "ongqir-f67ad",
+      "storage_bucket": "ongqir-f67ad.appspot.com"
+    },
+    "client": [
+      {
+        "client_info": {
+          "mobilesdk_app_id": "1:375562150321:android:c826f1077bb4d1486fdd90",
+          "android_client_info": {
+            "package_name": "com.kurir"
+          }
+        },
+        "oauth_client": [
+          {
+            "client_id": "375562150321-jc53f6ev8i3hrfsbm35bvie98hj3brsj.apps.googleusercontent.com",
+            "client_type": 3
+          }
+        ],
+        "api_key": [
+          {
+            "current_key": "AIzaSyCD4P9D4zjS4bjNk55tNjipQzqUdxGBrSo"
+          }
+        ],
+        "services": {
+          "appinvite_service": {
+            "other_platform_oauth_client": [
+              {
+                "client_id": "375562150321-jc53f6ev8i3hrfsbm35bvie98hj3brsj.apps.googleusercontent.com",
+                "client_type": 3
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "configuration_version": "1"
+  }
