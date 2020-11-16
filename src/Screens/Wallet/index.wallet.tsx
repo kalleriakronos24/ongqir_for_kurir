@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 
 import {
     View,
@@ -8,24 +8,29 @@ import {
     Dimensions,
     ScrollView,
     StatusBar,
-    ActivityIndicator
+    ActivityIndicator,
+    Linking,
+    Alert,
+    Modal
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import ImagePicker, { ImagePickerOptions, ImagePickerResponse } from 'react-native-image-picker';
 import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { formatRupiah } from '../../utils/functionality';
-
+import { formatRupiah, openUrl } from '../../utils/functionality';
+import ImageViewer from 'react-native-image-zoom-viewer'
 
 interface TransactionData {
-    id : string,
-    courier_id : {
-        fullname : string
+    id: string,
+    courier_id: {
+        fullname: string
     },
-    date : string,
-    reference_id : string,
-    amount : number,
-    status: boolean
+    date: string,
+    reference_id: string,
+    amount: number,
+    status: boolean,
+    bukti_transfer: string
+
 }
 const CourierBalance = ({ navigation }) => {
 
@@ -258,8 +263,9 @@ const CourierBalance = ({ navigation }) => {
                                             );
                                         }))
                                 }
+
                                 <TouchableOpacity
-                                    onPress={() => navigation.push("add_wallet")}
+                                    onPress={() => navigation.navigate("add_wallet")}
                                     activeOpacity={0.7}
                                     style={{
                                         padding: 7,
@@ -284,7 +290,7 @@ const CourierBalance = ({ navigation }) => {
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
-                                    onPress={() => navigation.push("transaction_history")}
+                                    onPress={() => navigation.navigate("transaction_history")}
                                     activeOpacity={0.7}
                                     style={{
                                         padding: 7,
@@ -321,7 +327,10 @@ const TransactionHistory = ({ navigation }) => {
     const barHeight = StatusBar.currentHeight;
     let balance = 1;
     let [data, setData] = useState<TransactionData[]>();
-    let [wallet, setWallet] = useState(0);
+    let [wallet, setWallet] = useState<number>(0);
+    let [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+
+    let [selectedImage, setSelectedImage] = useState<string>("");
 
     useEffect(() => {
         fetchTransactionData();
@@ -332,6 +341,7 @@ const TransactionHistory = ({ navigation }) => {
 
     const fetchTransactionData = async () => {
         await AsyncStorage.getItem("LOGIN_TOKEN", async (err, token: string | undefined) => {
+
             await fetch("http://192.168.43.178:8000/get/user/transaction/done/" + token, {
                 method: "GET",
                 headers: {
@@ -342,11 +352,11 @@ const TransactionHistory = ({ navigation }) => {
                     return res.json();
                 })
                 .then((res) => {
-                    console.log(res);
                     if (res.error) {
                         setData([]);
                     } else {
-                        setData(res.data || []);
+                        // console.log('transaction history res.data  :: ');
+                        setData(res.data);
                         setWallet(res.wallet);
                     }
                 })
@@ -356,6 +366,13 @@ const TransactionHistory = ({ navigation }) => {
 
         });
     };
+
+    const selectImage = (url: string): any => {
+        setIsModalVisible(true);
+
+        return setSelectedImage(url);
+    };
+
 
     return (
         <ScrollView
@@ -487,6 +504,8 @@ const TransactionHistory = ({ navigation }) => {
                                                     Bukti Transfer :{" "}
                                                 </Text>
                                                 <TouchableOpacity
+
+                                                    onPress={() => navigation.navigate('transaction_history_image_view', { url: v.bukti_transfer })}
                                                     style={{
                                                         padding: 6,
                                                         justifyContent: "center",
@@ -511,8 +530,9 @@ const TransactionHistory = ({ navigation }) => {
                                     );
                                 }))
                         }
+
                         <TouchableOpacity
-                            onPress={() => navigation.push("add_balance")}
+                            onPress={() => navigation.push("add_wallet")}
                             activeOpacity={0.7}
                             style={{
                                 padding: 7,
@@ -538,10 +558,45 @@ const TransactionHistory = ({ navigation }) => {
                     </View>
                 </View>
             </View>
+
+            {/* {
+                selectedImage ? (
+                    <Modal visible={isModalVisible}>
+                        <View style={{ flex: 1, backgroundColor: 'black' }}>
+                            <ImageViewer style={{ flex: 1, backgroundColor: 'white', height: 200, width: 200, justifyContent: 'center', alignItems: 'center' }} renderImage={() => <Image
+                                style={
+                                    {
+                                        width: '100%',
+                                        height: '100%',
+                                        alignSelf: 'stretch',
+                                        flex: 1,
+                                        backgroundColor: 'white'
+                                    }
+                                }
+                                source={{ uri: selectedImage }} />} />
+                        </View>
+                    </Modal>
+                ) : null
+            } */}
         </ScrollView>
     );
 };
 
+const TransactionHistoryImageView = ({ navigation, route }) => {
+
+    const { url } = route.params
+    return (
+        <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1, padding: 16, backgroundColor: 'white' }}>
+            <View style={{ height: 350, width: '100%' }}>
+                <Image style={{
+                    height: '100%',
+                    alignSelf: 'stretch',
+                    width: '100%'
+                }} source={{ uri: url }} />
+            </View>
+        </View>
+    )
+}
 
 const AddBalanceForm = ({ navigation }) => {
     let [loginToken, setLoginToken] = useState('');
@@ -844,5 +899,6 @@ const AddBalanceForm = ({ navigation }) => {
 export {
     CourierBalance,
     AddBalanceForm,
-    TransactionHistory
+    TransactionHistory,
+    TransactionHistoryImageView
 };

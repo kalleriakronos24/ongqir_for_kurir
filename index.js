@@ -57,23 +57,43 @@ PushNotification.configure({
 
         // process the notification
 
-        PushNotification.localNotification({
-            channelId: "not1",
-            subText: notification.data.subtext,
-            title: notification.data.title,
-            bigText: `
+        if (notification.data.type === 'ORDER_DIBATALKAN_USER') {
+
+            PushNotification.localNotification({
+                channelId: "not1",
+                subText: notification.data.subtext,
+                title: notification.data.title,
+                bigText: `Order dibatalkan oleh ${notification.data.dari} dengan Alasan ${notification.data.alasan}`,
+                message: 'Orderan dibatalkan oleh : ' + notification.data.dari,
+                vibrate: true,
+                vibration: 300,
+                playSound: true,
+                soundName: 'default',
+                actions: '["OK"]',
+                invokeApp: false
+            });
+
+        } else {
+
+
+            PushNotification.localNotification({
+                channelId: "not1",
+                subText: notification.data.subtext,
+                title: notification.data.title,
+                bigText: `
                 Ongkir : ${formatRupiah(notification.data.ongkir, 'Rp. ')} \n
                 Jarak Pengirim Ke Penerima : ${notification.data.km} km \n
                 Barang yg di kirim : ${notification.data.barang} 
             `,
-            message: 'Orderan dari : ' + notification.data.dari,
-            vibrate: true,
-            vibration: 300,
-            playSound: true,
-            soundName: 'default',
-            actions: '["Terima", "Tolak"]',
-            invokeApp: false
-        })
+                message: 'Orderan dari : ' + notification.data.dari,
+                vibrate: true,
+                vibration: 300,
+                playSound: true,
+                soundName: 'default',
+                actions: '["Terima", "Tolak"]',
+                invokeApp: false
+            });
+        }
 
         // (required) Called when a remote is received or opened, or local notification is opened
     },
@@ -81,29 +101,30 @@ PushNotification.configure({
     // (optional) Called when Registered Action is pressed and invokeApp is false, if true onNotification will be called (Android)
     onAction: async function (notification) {
 
-        if (notification.action === 'Terima') {
-            await AsyncStorage.getItem('LOGIN_TOKEN', async (e, r) => {
+        await AsyncStorage.getItem('LOGIN_TOKEN', async (e, r) => {
 
-                if (r) {
+            if (r) {
+
+                if (notification.action === 'Terima') {
+
                     await fetchOrder(r, navRef.current, "accept");
-                } else {
-                    // do nothing
-                }
 
-            })
-        } else {
+                } else if (notification.action === "OK") {
 
-            await AsyncStorage.getItem('LOGIN_TOKEN', async (e, r) => {
-
-                if (r) {
+                    // do something when courier got canceled
                     await fetchOrder(r, navRef.current, "tolak")
-                } else {
-                    // do nothing
-                }
-            })
-            // do tolak action
 
-        }
+                } else {
+
+                    await fetchOrder(r, navRef.current, "tolak")
+                    // do tolak action
+                }
+
+            } else {
+                // do nothing when token is empty
+            }
+        })
+
     },
 
     // (optional) Called when the user fails to register for remote notifications. Typically occurs when APNS is having issues, or the device is a simulator. (iOS)

@@ -25,7 +25,7 @@ import io from 'socket.io-client';
 import { SplashScreen } from '../Screens/Splash/index.splash';
 import Home from '../Screens/Home/index.home';
 import Order from '../Screens/Order/index.order';
-import { AddBalanceForm, CourierBalance, TransactionHistory } from '../Screens/Wallet/index.wallet';
+import { AddBalanceForm, CourierBalance, TransactionHistory, TransactionHistoryImageView } from '../Screens/Wallet/index.wallet';
 import { IndexMap, PengirimMap, PenerimaMap } from '../Screens/Map/index.map';
 import OrderHistory from '../Screens/OrderHistory/index.history';
 import { SERVER_URL } from '../utils/constants';
@@ -172,6 +172,12 @@ const Route = () => {
                                 cardOverlay: false
                             }} />
                             <Stack.Screen name="order_history" component={OrderHistory} options={{
+                                headerShown: true,
+                                cardShadowEnabled: false,
+                                cardOverlayEnabled: false,
+                                cardOverlay: false
+                            }} />
+                            <Stack.Screen name="transaction_history_image_view" component={TransactionHistoryImageView} options={{
                                 headerShown: true,
                                 cardShadowEnabled: false,
                                 cardOverlayEnabled: false,

@@ -16,6 +16,7 @@ import Geolocation from 'react-native-geolocation-service';
 import { useIsFocused } from '@react-navigation/native'
 import AsyncStorage from '@react-native-community/async-storage';
 import { formatRupiah, wait, useStateCallback } from '../../utils/functionality';
+import { SERVER_URL } from '../../utils/constants';
 
 
 // interfaces
@@ -213,6 +214,7 @@ const Order = ({ navigation }) => {
                             setKurirAccept(result.kurir_accept);
                             setOrderid(result._id);
                             setStatus(result.delivery_status);
+
                             setTimeout(() => {
                                 setIsLoading(false);
                             }, 2000)
@@ -232,10 +234,10 @@ const Order = ({ navigation }) => {
         await AsyncStorage.getItem('LOGIN_TOKEN', async (e, r: string | undefined) => {
 
             let body = {
-                _id: orderid,
-                token: r
+                id : orderid
             }
-            await fetch('http://192.168.43.178:8000/courier/cancel/order', {
+
+            await fetch(`${SERVER_URL}/order/courier/cancel_order`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -249,12 +251,14 @@ const Order = ({ navigation }) => {
 
                     if (res.msg === 'success canceled') {
                         Alert.alert('Pesan sistem', ' Kamu baru saja meng cancel orderan , silahkan tunggu orderan lainnya');
-                        fetchOrder();
+                        
                     }
                 })
                 .catch(err => {
                     throw new Error(err);
                 })
+
+            return onRefresh();
         })
     }
 
@@ -286,7 +290,7 @@ const Order = ({ navigation }) => {
                 .catch(err => {
                     throw new Error(err);
                 })
-
+            return onRefresh();
         })
     }
 
@@ -297,7 +301,10 @@ const Order = ({ navigation }) => {
             order_id: orderid,
             status: status,
             cancelable: true,
-            picked_up: false
+            picked_up: false,
+            payload : {
+                title : "Menuju ke tempat pengambilan barang",
+            }
         }
 
         fetch('http://192.168.43.178:8000/order/courier/set/deliver/status', {
@@ -323,13 +330,16 @@ const Order = ({ navigation }) => {
         return onRefresh();
     };
 
-    const setDeliverStatusPickedUp = async (status: string) => {
+    const setDeliverStatusPickedUp = async (status: string, title: string) => {
 
         let body = {
             order_id: orderid,
             status: status,
             cancelable: false,
-            picked_up: true
+            picked_up: true,
+            payload : {
+                title,
+            }
         }
 
         fetch('http://192.168.43.178:8000/order/courier/set/deliver/status', {
@@ -361,7 +371,7 @@ const Order = ({ navigation }) => {
         let body = {
             order_id: orderid
         }
-        return fetch('http://192.168.43.178:8000/order/single/set-to-done', {
+        return fetch(`${SERVER_URL}/order/single/set-to-done`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -447,7 +457,18 @@ const Order = ({ navigation }) => {
                                 <Text style={{ fontSize: 40, marginTop: 15, fontWeight: '700' }}>{formatRupiah(String(ongkir), 'Rp. ')}</Text>
                             </View>
                             {
-                                kurirAccept ? (
+                                isUserCancel ? (
+                                    <View style={{
+                                        marginTop: 20
+                                    }}>
+                                        <Text style={{ fontSize: 25 }}>Pemesan telah membatalkan orderan ini </Text>
+                                        <Text style={{ fontSize: 20 }}>Alasan : {alasan}</Text>
+
+                                        <TouchableOpacity activeOpacity={.8} onPress={() => cancelOrder()} style={{ justifyContent: 'center', alignItems: 'center', padding: 15, borderRadius: 9, marginTop: 10, backgroundColor: 'blue' }}>
+                                            <Text style={{ textAlign: 'center', color: 'white', fontSize: 23 }}>Klik untuk Mengakhiri</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                ) : !isUserCancel && kurirAccept ? (
                                     <View style={{ marginTop: 20 }}>
                                         <Text style={{ fontWeight: 'bold', fontSize: 25 }}>Opsi</Text>
                                         <Text style={{ fontSize: 20 }}>Klik jika : </Text>
@@ -461,7 +482,7 @@ const Order = ({ navigation }) => {
                                             }
                                             {
                                                 status === 'otw' ? (
-                                                    <TouchableOpacity onPress={() => setDeliverStatusPickedUp('sudah di ambil')} style={{ justifyContent: 'center', alignItems: 'center', padding: 15, borderRadius: 9, marginTop: 10, backgroundColor: 'blue' }}>
+                                                    <TouchableOpacity onPress={() => setDeliverStatusPickedUp('sudah di ambil', "Barang Telah di Ambil, Barang Siap di Antar")} style={{ justifyContent: 'center', alignItems: 'center', padding: 15, borderRadius: 9, marginTop: 10, backgroundColor: 'blue' }}>
                                                         <Text style={{ fontSize: 23, color: 'white' }}>Barang sudah di pickup</Text>
                                                     </TouchableOpacity>
                                                 ) : null
@@ -469,7 +490,7 @@ const Order = ({ navigation }) => {
 
                                             {
                                                 status === 'sudah di ambil' ? (
-                                                    <TouchableOpacity onPress={() => setDeliverStatusPickedUp('sedang di antar')} style={{ justifyContent: 'center', alignItems: 'center', padding: 15, borderRadius: 9, marginTop: 10, backgroundColor: 'blue' }}>
+                                                    <TouchableOpacity onPress={() => setDeliverStatusPickedUp('sedang di antar', "Barang sedang di kirim, Dalam Perjalanan")} style={{ justifyContent: 'center', alignItems: 'center', padding: 15, borderRadius: 9, marginTop: 10, backgroundColor: 'blue' }}>
                                                         <Text style={{ fontSize: 23, color: 'white' }}>Barang dalam perjalanan</Text>
                                                     </TouchableOpacity>
                                                 ) : null
@@ -485,16 +506,17 @@ const Order = ({ navigation }) => {
                                         </View>
                                     </View>
                                 ) : (
-                                        <View style={{ flex: 1, marginTop: 20 }}>
-                                            <TouchableOpacity onPress={() => acceptOrder()} style={{ marginTop: 15, padding: 10, borderRadius: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: 'green' }}>
-                                                <Text style={{ fontSize: 23, fontWeight: 'bold', marginLeft: 10, color: 'white' }}>Terima</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity onPress={() => cancelOrder()} style={{ marginTop: 15, padding: 10, borderRadius: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: 'red' }}>
-                                                <Text style={{ fontSize: 23, fontWeight: 'bold', marginLeft: 10, color: 'white' }}>Tolak</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    )
+                                            <View style={{ flex: 1, marginTop: 20 }}>
+                                                <TouchableOpacity onPress={() => acceptOrder()} style={{ marginTop: 15, padding: 10, borderRadius: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: 'green' }}>
+                                                    <Text style={{ fontSize: 23, fontWeight: 'bold', marginLeft: 10, color: 'white' }}>Terima</Text>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity onPress={() => cancelOrder()} style={{ marginTop: 15, padding: 10, borderRadius: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: 'red' }}>
+                                                    <Text style={{ fontSize: 23, fontWeight: 'bold', marginLeft: 10, color: 'white' }}>Tolak</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        )
                             }
+
                         </View>
                     ) : (
                             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 }}>

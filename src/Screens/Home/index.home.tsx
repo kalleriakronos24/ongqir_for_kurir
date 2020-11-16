@@ -248,7 +248,7 @@ const Home = ({ navigation }) => {
                         </View>
 
                         <View style={{ padding: 16, justifyContent: 'center', alignItems: 'center', flex: 1 }}>
-                            <TouchableOpacity activeOpacity={.8} onPress={() => test()} style={{ marginVertical: 20, padding: 25, justifyContent: 'center', alignItems: 'center', borderRadius: 15, backgroundColor: 'green' }}>
+                            <TouchableOpacity activeOpacity={.8} onPress={() => navigation.navigate('transaction_out')} style={{ marginVertical: 20, padding: 25, justifyContent: 'center', alignItems: 'center', borderRadius: 15, backgroundColor: 'green' }}>
                                 <Text style={{ color: 'white', fontSize: 25, fontWeight: 'bold' }}>Tambah Saldo</Text>
                             </TouchableOpacity>
                             <TouchableOpacity activeOpacity={.8} onPress={() => navigation.navigate('order_history')} style={{ marginVertical: 20, padding: 25, justifyContent: 'center', alignItems: 'center', borderRadius: 15, backgroundColor: 'blue' }}>

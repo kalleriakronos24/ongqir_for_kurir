@@ -59,6 +59,8 @@ const acceptOrder = async (order_id: string, token: string | undefined, navigati
         .then(res => {
             if (res.msg === 'success accepted') {
                 navigation.navigate('order');
+
+                console.log('KURIR ACCEPT ORDER : TRUE ');
             }
         })
         .catch(err => {
@@ -66,13 +68,13 @@ const acceptOrder = async (order_id: string, token: string | undefined, navigati
         })
 }
 
-const cancelOrder = async (orderid: string, token : string | undefined, navigation: { navigate: (p: string) => void }) => {
+const cancelOrder = async (orderid: string, token: string | undefined, navigation: { navigate: (p: string) => void }) => {
 
     let body = {
-        _id: orderid,
-        token: token
+        id : orderid
     }
-    await fetch('http://192.168.43.178:8000/courier/cancel/order', {
+
+    await fetch(`${SERVER_URL}/order/courier/cancel_order`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -83,9 +85,10 @@ const cancelOrder = async (orderid: string, token : string | undefined, navigati
             return res.json()
         })
         .then(res => {
+
             if (res.msg === 'success canceled') {
                 Alert.alert('Pesan sistem', ' Kamu baru saja meng cancel orderan , silahkan tunggu orderan lainnya');
-                return navigation.navigate('order');   
+                navigation.navigate('order');
             }
         })
         .catch(err => {
