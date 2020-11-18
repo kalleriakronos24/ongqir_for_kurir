@@ -17,6 +17,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useDispatch, useSelector } from 'react-redux';
 import PushNotification from 'react-native-push-notification';
 import { SERVER_URL } from '../../utils/constants';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const socket = io(SERVER_URL, {
     "transports": ['websocket'],
@@ -49,7 +50,7 @@ const Home = ({ navigation }) => {
         active_order: '',
         fotoDiri: ''
     });
-    
+
     let [isLoading, setIsLoading] = useState<boolean>(true);
 
     const useIsMounted = () => {
@@ -208,9 +209,9 @@ const Home = ({ navigation }) => {
             <ActivityIndicator color="blue" size="large" />
         </View>
     ) : (
-            <View style={{ flex: 1, backgroundColor: 'white', paddingTop: StatusBar.currentHeight }}>
+            <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingTop: StatusBar.currentHeight }}>
                 <StatusBar barStyle="default" backgroundColor="rgba(0,0,0,0.251)" translucent />
-                <View style={{ padding: 16, flex: 1, alignItems: 'center' }}>
+                <View style={{ padding: 16, flex: 1, alignItems: 'center', paddingBottom: 40 }}>
                     <View style={{ height: 150, width: 150, borderRadius: 150 / 2 }}>
                         <Image source={{ uri: userData.fotoDiri }} style={{
                             borderRadius: 150 / 2,
@@ -248,6 +249,9 @@ const Home = ({ navigation }) => {
                         </View>
 
                         <View style={{ padding: 16, justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+                            <TouchableOpacity activeOpacity={.8} onPress={() => navigation.navigate('ride')} style={{ marginVertical: 20, padding: 25, justifyContent: 'center', alignItems: 'center', borderRadius: 15, backgroundColor: 'blue' }}>
+                                <Text style={{ color: 'white', fontSize: 25, fontWeight: 'bold' }}>Ride / Cari Orderan</Text>
+                            </TouchableOpacity>
                             <TouchableOpacity activeOpacity={.8} onPress={() => navigation.navigate('transaction_out')} style={{ marginVertical: 20, padding: 25, justifyContent: 'center', alignItems: 'center', borderRadius: 15, backgroundColor: 'green' }}>
                                 <Text style={{ color: 'white', fontSize: 25, fontWeight: 'bold' }}>Tambah Saldo</Text>
                             </TouchableOpacity>
@@ -257,7 +261,7 @@ const Home = ({ navigation }) => {
                         </View>
                     </View>
                 </View>
-            </View>
+            </ScrollView>
         )
 }
 

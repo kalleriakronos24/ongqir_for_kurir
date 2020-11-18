@@ -19,6 +19,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { formatRupiah, openUrl } from '../../utils/functionality';
 import ImageViewer from 'react-native-image-zoom-viewer'
+import { SERVER_URL } from '../../utils/constants';
 
 interface TransactionData {
     id: string,
@@ -57,7 +58,7 @@ const CourierBalance = ({ navigation }) => {
 
     const fetchTransactionData = async () => {
         await AsyncStorage.getItem("LOGIN_TOKEN", async (err, token: string | undefined) => {
-            await fetch("http://192.168.43.178:8000/get/request/add/wallet/" + token, {
+            await fetch(`${SERVER_URL}/get/request/add/wallet/` + token, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -342,7 +343,7 @@ const TransactionHistory = ({ navigation }) => {
     const fetchTransactionData = async () => {
         await AsyncStorage.getItem("LOGIN_TOKEN", async (err, token: string | undefined) => {
 
-            await fetch("http://192.168.43.178:8000/get/user/transaction/done/" + token, {
+            await fetch(`${SERVER_URL}/get/user/transaction/done/` + token, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",

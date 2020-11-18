@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { formatRupiah } from '../../utils/functionality';
+import { SERVER_URL } from '../../utils/constants';
 
 
 // interface
@@ -65,7 +66,7 @@ const OrderHistory = ({ navigation, route }) => {
                     token: res
                 };
 
-                fetch('http://192.168.43.178:8000/order/courier/get/done/all', {
+                fetch(`${SERVER_URL}/order/courier/get/done/all`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

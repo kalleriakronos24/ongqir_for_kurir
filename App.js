@@ -14,6 +14,8 @@ import { LogBox } from 'react-native';
 import { Route } from './src/Routes/index.routes.js';
 import { createStore, } from 'redux';
 import Root from './src/Redux/Reducers/index.reducer';
+import { CheckVersion } from './src/utils/utils';
+
 
 const store = createStore(Root);
 
@@ -30,6 +32,12 @@ const App = () => {
     LogBox.ignoreAllLogs(true);
 
   });
+
+  /**
+   * Always Check Latest Version if the app openend
+   */
+  CheckVersion();
+
   return (
     <>
       <Provider store={store}>

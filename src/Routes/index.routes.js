@@ -29,6 +29,7 @@ import { AddBalanceForm, CourierBalance, TransactionHistory, TransactionHistoryI
 import { IndexMap, PengirimMap, PenerimaMap } from '../Screens/Map/index.map';
 import OrderHistory from '../Screens/OrderHistory/index.history';
 import { SERVER_URL } from '../utils/constants';
+import Ride from '../Screens/Ride/index.ride';
 
 const socket = io(SERVER_URL, {
     "transports": ['websocket'],
@@ -178,6 +179,12 @@ const Route = () => {
                                 cardOverlay: false
                             }} />
                             <Stack.Screen name="transaction_history_image_view" component={TransactionHistoryImageView} options={{
+                                headerShown: true,
+                                cardShadowEnabled: false,
+                                cardOverlayEnabled: false,
+                                cardOverlay: false
+                            }} />
+                            <Stack.Screen name="ride" component={Ride} options={{
                                 headerShown: true,
                                 cardShadowEnabled: false,
                                 cardOverlayEnabled: false,
