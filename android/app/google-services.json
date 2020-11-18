@@ -10,7 +10,7 @@
         "client_info": {
           "mobilesdk_app_id": "1:375562150321:android:c826f1077bb4d1486fdd90",
           "android_client_info": {
-            "package_name": "com.kurir"
+            "package_name": "com.ongqir.ongqirforkurir"
           }
         },
         "oauth_client": [

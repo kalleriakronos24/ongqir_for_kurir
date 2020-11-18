@@ -129,7 +129,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.kurir"
+        applicationId "com.ongqir.ongqirforkurir"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

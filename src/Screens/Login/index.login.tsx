@@ -39,7 +39,6 @@ const Login = ({ navigation }) => {
         token: device_token
     };
 
-    console.log('SERVER URL', typeof SERVER_URL);
     const submitLogin = () => {
 
 
