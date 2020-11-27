@@ -10,7 +10,6 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Geolocation from '@react-native-community/geolocation';
 import AsyncStorage from '@react-native-community/async-storage';
 import { SERVER_URL, GOOGLE_MAPS_APIKEY } from '../../utils/constants';
-import { clearWatch } from 'react-native-geolocation-service';
 
 const Ride = ({ navigation }): React.ReactElement => {
 
@@ -37,7 +36,7 @@ const Ride = ({ navigation }): React.ReactElement => {
         updateLocation();
 
         return () => {
-            clearWatch(updateLocation)
+            // clearWatch(updateLocation)
         }
 
     }, []);

@@ -75,7 +75,6 @@ PushNotification.configure({
 
         } else {
 
-
             PushNotification.localNotification({
                 channelId: "not1",
                 subText: notification.data.subtext,

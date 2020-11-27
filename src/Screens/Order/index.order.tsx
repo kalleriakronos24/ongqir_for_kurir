@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, DependencyList } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -11,11 +11,10 @@ import {
 
 import Icon from 'react-native-vector-icons/Ionicons';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import io from 'socket.io-client';
 import Geolocation from 'react-native-geolocation-service';
 import { useIsFocused } from '@react-navigation/native'
 import AsyncStorage from '@react-native-community/async-storage';
-import { formatRupiah, wait, useStateCallback } from '../../utils/functionality';
+import { formatRupiah, wait } from '../../utils/functionality';
 import { SERVER_URL } from '../../utils/constants';
 
 
@@ -144,7 +143,7 @@ const Order = ({ navigation }) => {
 
         Geolocation.getCurrentPosition(
             async (position) => {
-                await fetch('http://192.168.43.178:8000/courier/update/location', {
+                await fetch(`${SERVER_URL}/courier/update/location`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -184,7 +183,7 @@ const Order = ({ navigation }) => {
                 console.log('test');
                 updateLocation(res);
 
-                return await fetch('http://192.168.43.178:8000/courier/order/get', {
+                return await fetch(`${SERVER_URL}/courier/order/get`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -271,7 +270,7 @@ const Order = ({ navigation }) => {
                 token: r
             }
 
-            await fetch('http://192.168.43.178:8000/courier/accept/order', {
+            await fetch(`${SERVER_URL}/courier/accept/order`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -307,7 +306,7 @@ const Order = ({ navigation }) => {
             }
         }
 
-        fetch('http://192.168.43.178:8000/order/courier/set/deliver/status', {
+        fetch(`${SERVER_URL}/order/courier/set/deliver/status`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -342,7 +341,7 @@ const Order = ({ navigation }) => {
             }
         }
 
-        fetch('http://192.168.43.178:8000/order/courier/set/deliver/status', {
+        fetch(`${SERVER_URL}/order/courier/set/deliver/status`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -20,6 +20,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { formatRupiah, openUrl } from '../../utils/functionality';
 import ImageViewer from 'react-native-image-zoom-viewer'
 import { SERVER_URL } from '../../utils/constants';
+import RNPickerSelect from 'react-native-picker-select';
+
 
 interface TransactionData {
     id: string,
@@ -31,7 +33,8 @@ interface TransactionData {
     amount: number,
     status: boolean,
     bukti_transfer: string
-
+    ke: Bank,
+    rejected: boolean
 }
 const CourierBalance = ({ navigation }) => {
 
@@ -448,7 +451,6 @@ const TransactionHistory = ({ navigation }) => {
                                             style={{
                                                 padding: 10,
                                                 flexDirection: "column",
-                                                height: 200,
                                                 borderRadius: 10,
                                                 borderWidth: 0.7,
                                                 marginBottom: 10,
@@ -498,6 +500,14 @@ const TransactionHistory = ({ navigation }) => {
                                                 </Text>
                                                 <Text>
                                                     {formatRupiah(String(v.amount), "Rp. ")},-
+                                                </Text>
+                                            </View>
+                                            <View style={{ flexDirection: "row", paddingTop: 5 }}>
+                                                <Text style={{ fontSize: 15, fontWeight: "bold" }}>
+                                                    Top up di tolak Oleh Admin :{" "}
+                                                </Text>
+                                                <Text>
+                                                    {v.rejected ? "Iya." : "Tidak."}
                                                 </Text>
                                             </View>
                                             <View style={{ flexDirection: "row", paddingTop: 5 }}>
@@ -599,15 +609,32 @@ const TransactionHistoryImageView = ({ navigation, route }) => {
     )
 }
 
+interface Bank {
+    nama_bank: string,
+    no_rek: string,
+    atas_nama_pemilik: string
+};
+
+interface BankSelect {
+    value: Bank,
+    label: Bank
+};
+
 const AddBalanceForm = ({ navigation }) => {
-    let [loginToken, setLoginToken] = useState('');
-    let [loading, setLoading] = useState(true);
+    let [loginToken, setLoginToken] = useState<string | undefined>('');
+    let [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
         AsyncStorage.getItem("LOGIN_TOKEN", (_err, res: string | undefined) => {
             setLoginToken(res);
             setLoading(false);
         });
+
+        fetchBank();
+
+        return () => {
+            console.log('cleaned up');
+        }
     }, []);
 
     const barHeight = StatusBar.currentHeight;
@@ -616,6 +643,13 @@ const AddBalanceForm = ({ navigation }) => {
     let [buktiTf, setBuktiTf] = useState<ImagePickerResponse>();
     let [buktiTfType, setBuktiTfType] = useState<string | undefined>('');
     let [isErrorWhenSubmitting, setIsErrorWhenSubmitting] = useState(false);
+    let [banks, setBanks] = useState<Bank[] | null>(null);
+    let [bankSelect, setBankSelect] = useState<BankSelect[] | null>(null);
+    let [selectedBank, setSelectedBank] = useState<Bank>({
+        nama_bank: "BCA",
+        no_rek: "123123123123",
+        atas_nama_pemilik: "UDIN"
+    });
 
     const options: ImagePickerOptions = {
         mediaType: "photo",
@@ -623,6 +657,23 @@ const AddBalanceForm = ({ navigation }) => {
         storageOptions: {
             skipBackup: true,
         },
+    };
+
+
+    const fetchBank = async () => {
+        return await fetch(`${SERVER_URL}/fetch-bank`, {
+            method: "GET",
+        })
+            .then(res => {
+                return res.json();
+            })
+            .then(async res => {
+                setBanks(res.bank);
+                setBankSelect(res.bank_select);
+            })
+            .catch(err => {
+                console.log('err when fetching bank data to the server');
+            })
     };
 
     const openGallery = () => {
@@ -671,7 +722,7 @@ const AddBalanceForm = ({ navigation }) => {
 
         await RNFetchBlob.fetch(
             'POST',
-            'http://192.168.43.178:8000/request/add/balance',
+            `${SERVER_URL}/request/add/balance`,
             {
                 Authorization: 'Bearer' + token,
                 Accept: 'application/json',
@@ -692,6 +743,10 @@ const AddBalanceForm = ({ navigation }) => {
                     data: buktiTf?.data,
                     type: buktiTfType,
                 },
+                {
+                    name: 'ke',
+                    data: JSON.stringify(selectedBank)
+                }
             ]
         )
             .then((res) => {
@@ -707,6 +762,26 @@ const AddBalanceForm = ({ navigation }) => {
                 console.log("ini error ", err);
             });
     };
+
+    const onChangeBankSelect = (value: string) => {
+
+        switch (value) {
+            case "bca":
+                return setSelectedBank({
+                    atas_nama_pemilik: "UDIN",
+                    no_rek: "21312312312",
+                    nama_bank: "BCA"
+                })
+            case "mandiri":
+                return setSelectedBank({
+                    atas_nama_pemilik: "UDIN 2",
+                    no_rek: "21312312312",
+                    nama_bank: "MANDIRI"
+                })
+            default:
+                return null;
+        }
+    }
     return loginToken !== "" ? (
         <ScrollView
             style={{ flex: 1, backgroundColor: "white", paddingTop: barHeight }}
@@ -733,16 +808,47 @@ const AddBalanceForm = ({ navigation }) => {
 
                 <View style={{ marginTop: 20, flex: 1 }}>
                     <View style={{ padding: 10, marginBottom: 5 }}>
+
+                        <View>
+                            <Text>Pilih BANK</Text>
+                            {
+                                banks ? (
+                                    <RNPickerSelect
+                                        onValueChange={(value) => onChangeBankSelect(value)}
+                                        items={[
+                                            { label: 'BANK BCA', value: 'bca' },
+                                            { label: 'BANK MANDIRI', value: 'mandiri' },
+                                        ]}
+                                        style={{
+                                            viewContainer: {
+                                                borderWidth: 1,
+                                                borderRadius: 10
+                                            },
+                                            inputAndroid: {
+                                                color: 'black'
+                                            },
+                                            placeholder: {
+                                                color: 'black'
+                                            }
+                                        }}
+
+                                    />
+                                ) : (
+                                        <ActivityIndicator size="large" color="blue" />
+                                    )
+                            }
+
+                        </View>
                         <Text
                             style={{ fontWeight: "bold", fontSize: 15, letterSpacing: 0.5 }}
                         >
-                            No. Rek Ongqir : 12376172367123
-            </Text>
+                            No. Rek Ongqir : {selectedBank.no_rek}
+                        </Text>
                         <Text
                             style={{ fontWeight: "bold", fontSize: 15, letterSpacing: 0.5 }}
                         >
-                            BCA | Atas Nama : Mada Nugraha
-            </Text>
+                            {selectedBank.nama_bank} | Atas Nama : {selectedBank.atas_nama_pemilik}
+                        </Text>
                     </View>
                     <View style={{ padding: 10, marginBottom: 5 }}>
                         <Text

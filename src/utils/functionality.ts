@@ -5,7 +5,9 @@ import {
   Alert
 } from 'react-native';
 import React, {useState, useEffect, useRef } from 'react';
+
 const formatRupiah = (angka: string, prefix: string) => {
+  
   var number_string = angka.replace(/[^,\d]/g, '').toString(),
     split = number_string.split(','),
     sisa = split[0].length % 3,
