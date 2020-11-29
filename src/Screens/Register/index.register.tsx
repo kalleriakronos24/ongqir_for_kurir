@@ -122,7 +122,6 @@ const Register = ({ navigation }) => {
 
 
     const submitRegistForm = async () => {
-        console.log('test');
 
         let token = Math.random() * 9999 + 'abcd'
 
@@ -254,6 +253,9 @@ const Register = ({ navigation }) => {
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <Text style={{ fontSize: 20, fontWeight: 'bold', textAlign: 'center' }}>Pendaftaran Berhasil</Text>
                     <Text style={{ marginTop: 15, color: 'blue', fontSize: 20, textAlign: 'center', fontWeight: 'bold' }}>Silahkan cek email anda dan Klik link yang kita Kirim...</Text>
+                    <TouchableOpacity onPress={() => navigation.replace('login')} style={{ marginTop: 20, backgroundColor: 'blue', padding: 15, borderRadius: 9, justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
+                        <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold', letterSpacing: .5 }}>Resend Verification</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity onPress={() => navigation.replace('login')} style={{ marginTop: 20, backgroundColor: 'blue', padding: 15, borderRadius: 9, justifyContent: 'center', alignItems: 'center' }}>
                         <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold', letterSpacing: .5 }}>Menuju Login</Text>
                     </TouchableOpacity>

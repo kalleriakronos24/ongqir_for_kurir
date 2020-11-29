@@ -1,24 +1,19 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {
     View,
     Text,
     Image,
     TouchableOpacity,
-    Dimensions,
     ScrollView,
     StatusBar,
     ActivityIndicator,
-    Linking,
-    Alert,
-    Modal
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import ImagePicker, { ImagePickerOptions, ImagePickerResponse } from 'react-native-image-picker';
 import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { formatRupiah, openUrl } from '../../utils/functionality';
-import ImageViewer from 'react-native-image-zoom-viewer'
+import { formatRupiah } from '../../utils/functionality';
 import { SERVER_URL } from '../../utils/constants';
 import RNPickerSelect from 'react-native-picker-select';
 
@@ -638,7 +633,7 @@ const AddBalanceForm = ({ navigation }) => {
     }, []);
 
     const barHeight = StatusBar.currentHeight;
-    const { width, height } = Dimensions.get("window");
+    // const { width, height } = Dimensions.get("window");
     let [imageSrc, setImageSrc] = useState<{ uri: string }>({ uri: '' });
     let [buktiTf, setBuktiTf] = useState<ImagePickerResponse>();
     let [buktiTfType, setBuktiTfType] = useState<string | undefined>('');
@@ -753,6 +748,7 @@ const AddBalanceForm = ({ navigation }) => {
                 return res.json();
             })
             .then((res) => {
+                console.log('submit isi wallet :: ', res);
                 if (res.error) {
                     setIsErrorWhenSubmitting(true);
                 }
@@ -811,32 +807,26 @@ const AddBalanceForm = ({ navigation }) => {
 
                         <View>
                             <Text>Pilih BANK</Text>
-                            {
-                                banks ? (
-                                    <RNPickerSelect
-                                        onValueChange={(value) => onChangeBankSelect(value)}
-                                        items={[
-                                            { label: 'BANK BCA', value: 'bca' },
-                                            { label: 'BANK MANDIRI', value: 'mandiri' },
-                                        ]}
-                                        style={{
-                                            viewContainer: {
-                                                borderWidth: 1,
-                                                borderRadius: 10
-                                            },
-                                            inputAndroid: {
-                                                color: 'black'
-                                            },
-                                            placeholder: {
-                                                color: 'black'
-                                            }
-                                        }}
 
-                                    />
-                                ) : (
-                                        <ActivityIndicator size="large" color="blue" />
-                                    )
-                            }
+                            <RNPickerSelect
+                                onValueChange={(value) => onChangeBankSelect(value)}
+                                items={[
+                                    { label: 'BANK BCA', value: 'bca' },
+                                    { label: 'BANK MANDIRI', value: 'mandiri' },
+                                ]}
+                                style={{
+                                    viewContainer: {
+                                        borderWidth: 1,
+                                        borderRadius: 10
+                                    },
+                                    inputAndroid: {
+                                        color: 'black'
+                                    },
+                                    placeholder: {
+                                        color: 'black'
+                                    }
+                                }}
+                            />
 
                         </View>
                         <Text

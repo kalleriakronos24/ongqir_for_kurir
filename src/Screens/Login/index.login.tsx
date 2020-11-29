@@ -85,6 +85,12 @@ const Login = ({ navigation }) => {
     }
 
 
+    useEffect(() => {
+
+        console.log('ENVIRONTMENT :: ', SERVER_URL);
+
+    }, [])
+
     return (
         <View style={{ flex: 1, backgroundColor: 'white', paddingTop: StatusBar.currentHeight }}>
             <StatusBar barStyle="default" backgroundColor="rgba(0,0,0,0.251)" translucent />

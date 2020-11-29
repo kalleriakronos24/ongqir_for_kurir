@@ -14,8 +14,7 @@ import { useIsFocused } from '@react-navigation/native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import { formatRupiah } from '../../utils/functionality';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useDispatch, useSelector } from 'react-redux';
-import PushNotification from 'react-native-push-notification';
+import { useDispatch } from 'react-redux';
 import { SERVER_URL } from '../../utils/constants';
 import { ScrollView } from 'react-native-gesture-handler';
 

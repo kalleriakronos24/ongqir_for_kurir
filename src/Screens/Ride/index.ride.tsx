@@ -77,6 +77,7 @@ const Ride = ({ navigation }): React.ReactElement => {
                         await fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + position.coords.latitude + ',' + position.coords.longitude + '&key=' + GOOGLE_MAPS_APIKEY)
                             .then((response) => response.json())
                             .then((res) => {
+                                console.log('address :: ', res);
                                 setAddress(res.results[0]["address_components"][1]["short_name"]);
                             });
 
