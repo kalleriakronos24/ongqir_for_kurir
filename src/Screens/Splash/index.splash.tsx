@@ -31,7 +31,8 @@ export const SplashScreen = () => {
                     flex: 1,
                     backgroundColor: 'black',
                     justifyContent: 'center',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    paddingTop: barHeight
                 }}
             >
                 <LoadingSpinner />

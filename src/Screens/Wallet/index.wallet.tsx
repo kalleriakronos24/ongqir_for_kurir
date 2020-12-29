@@ -8,6 +8,7 @@ import {
     ScrollView,
     StatusBar,
     ActivityIndicator,
+    Modal,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import ImagePicker, { ImagePickerOptions, ImagePickerResponse } from 'react-native-image-picker';
@@ -16,6 +17,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { formatRupiah } from '../../utils/functionality';
 import { SERVER_URL } from '../../utils/constants';
 import RNPickerSelect from 'react-native-picker-select';
+import SupportSection from '../../Components/Support';
 
 
 interface TransactionData {
@@ -31,6 +33,8 @@ interface TransactionData {
     ke: Bank,
     rejected: boolean
 }
+
+
 const CourierBalance = ({ navigation }) => {
 
     const barHeight = StatusBar.currentHeight;
@@ -238,6 +242,7 @@ const CourierBalance = ({ navigation }) => {
                                                             Bukti Transfer :{" "}
                                                         </Text>
                                                         <TouchableOpacity
+                                                            onPress={() => navigation.navigate('transaction_history_image_view', { url: v.bukti_transfer })}
                                                             style={{
                                                                 padding: 6,
                                                                 justifyContent: "center",
@@ -314,6 +319,7 @@ const CourierBalance = ({ navigation }) => {
                             </View>
                         </View>
                     )}
+                <SupportSection />
             </View>
         </ScrollView>
     );
@@ -563,6 +569,7 @@ const TransactionHistory = ({ navigation }) => {
                         </TouchableOpacity>
                     </View>
                 </View>
+                <SupportSection />
             </View>
 
             {/* {
@@ -645,6 +652,8 @@ const AddBalanceForm = ({ navigation }) => {
         no_rek: "123123123123",
         atas_nama_pemilik: "UDIN"
     });
+    let [modalVisible, setModalVisible] = useState<boolean>(false);
+    let [isNetError, setIsNetError] = useState<string>("");
 
     const options: ImagePickerOptions = {
         mediaType: "photo",
@@ -713,6 +722,9 @@ const AddBalanceForm = ({ navigation }) => {
     const rand = Math.floor(Math.random() * 899 + 100);
 
     const submitForm = async () => {
+
+        setModalVisible(true);
+
         let token = Math.random() * 9999 + 'abcd';
 
         await RNFetchBlob.fetch(
@@ -747,15 +759,26 @@ const AddBalanceForm = ({ navigation }) => {
             .then((res) => {
                 return res.json();
             })
-            .then((res) => {
+            .then(async (res) => {
+
                 console.log('submit isi wallet :: ', res);
                 if (res.error) {
+                    setModalVisible(false);
                     setIsErrorWhenSubmitting(true);
                 }
-                navigation.push("transaction_out");
+
+                setModalVisible(false);
+
+                setTimeout(async () => {
+                    await navigation.push("transaction_out");
+                }, 2000);
             })
-            .catch((err) => {
+            .catch(async (err) => {
                 console.log("ini error ", err);
+
+                // network error or something 
+                setIsNetError("Terjadi Masalah dalam koneksi mu, silahkan coba lagi");
+
             });
     };
 
@@ -797,6 +820,27 @@ const AddBalanceForm = ({ navigation }) => {
                     <Icon name="arrow-back-outline" size={30} />
                 </TouchableOpacity>
             </View>
+            {
+                modalVisible ? (
+                    <Modal
+                        style={{
+                            flex: 1
+                        }}
+                        animationType="fade"
+                        transparent={true}
+                        visible={modalVisible}>
+                        <View style={{
+                            flex: 1,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            padding: 16
+                        }}>
+                            <Text style={{ color: 'black', fontSize: 24, fontWeight: 'bold', textAlign: 'center' }}>Memproses data mu ke server ...</Text>
+                            <ActivityIndicator color="black" size="large" />
+                        </View>
+                    </Modal>
+                ) : null
+            }
             <View style={{ padding: 16, flex: 1, alignItems: "center" }}>
                 <Text style={{ fontWeight: "bold", fontSize: 17, letterSpacing: 0.5 }}>
                     Form isi Saldo / Wallet
@@ -976,7 +1020,18 @@ const AddBalanceForm = ({ navigation }) => {
                             Kirim
             </Text>
                     </TouchableOpacity>
+                    {
+                        isErrorWhenSubmitting ? (
+                            <Text style={{ color: 'red', fontSize: 20, fontWeight: 'bold' }}>Terjadi Kesalahan dalam memproses data mu, silahkan coba lagi </Text>
+                        ) : null
+                    }
+                    {
+                        isNetError ? (
+                            <Text style={{ color: 'red', fontSize: 20, fontWeight: 'bold' }}>{isNetError}</Text>
+                        ) : null
+                    }
                 </View>
+                <SupportSection/>
             </View>
         </ScrollView>
     ) : (

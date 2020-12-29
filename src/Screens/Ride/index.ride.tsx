@@ -9,18 +9,17 @@ import React, { useEffect, useState } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Geolocation from '@react-native-community/geolocation';
 import AsyncStorage from '@react-native-community/async-storage';
-import { SERVER_URL, GOOGLE_MAPS_APIKEY } from '../../utils/constants';
+import { SERVER_URL } from '../../utils/constants';
+import SupportSection from '../../Components/Support';
+import { SplashScreen } from '../Splash/index.splash';
 
 const Ride = ({ navigation }): React.ReactElement => {
 
-
     //state
     let [address, setAddress] = useState<string>("");
-
+    let [gmapKey, setGmapKey] = useState<string | null>(null);
 
     //variables
-    let intervalLocation: NodeJS.Timeout;
-
 
     //lifecycle
     useEffect(() => {
@@ -44,6 +43,22 @@ const Ride = ({ navigation }): React.ReactElement => {
 
         requestLocationPermission();
 
+
+        // fetch(`${SERVER_URL}/fetch-gmap-key`, {
+        //     method: 'GET',
+        //     headers: {
+        //         'Content-Type': 'application/json'
+        //     }
+        // })
+        //     .then(res => {
+        //         return res.json()
+        //     })
+        //     .then(res => {
+
+        //     })
+        //     .catch(err => {
+        //         throw new Error(err);
+        //     })
     }, [])
 
 
@@ -71,54 +86,69 @@ const Ride = ({ navigation }): React.ReactElement => {
     const updateLocation = async () => {
         await AsyncStorage.getItem('LOGIN_TOKEN', async (e, r: string | undefined) => {
             if (r) {
-                return Geolocation.watchPosition(
-                    async (position) => {
-                        console.log('is this running ???????');
-                        await fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + position.coords.latitude + ',' + position.coords.longitude + '&key=' + GOOGLE_MAPS_APIKEY)
-                            .then((response) => response.json())
-                            .then((res) => {
-                                console.log('address :: ', res);
-                                setAddress(res.results[0]["address_components"][1]["short_name"]);
-                            });
+
+                fetch(`${SERVER_URL}/fetch-gmap-key`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(res => {
+                        return res.json()
+                    })
+                    .then(res => {
+                       return Geolocation.watchPosition(
+                            async (position) => {
+                                await fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + position.coords.latitude + ',' + position.coords.longitude + '&key=' + res.key)
+                                    .then((response) => response.json())
+                                    .then((res) => {
+                                        console.log('address :: ', res);
+                                        setAddress(res.results[0]["address_components"][1]["short_name"]);
+                                    });
 
 
-                        await fetch(`${SERVER_URL}/courier/update/location`, {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                Authorization: "Bearer " + Math.floor(Math.random() * 9999 + 1000)
+                                await fetch(`${SERVER_URL}/courier/update/location`, {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        Authorization: "Bearer " + Math.floor(Math.random() * 9999 + 1000)
+                                    },
+                                    body: JSON.stringify({
+                                        token: r,
+                                        coords: position.coords
+                                    })
+                                })
+                                    .then(res => {
+                                        return res.json();
+                                    })
+                                    .then(res => {
+                                        console.log('msg from courier ride api ?', res.msg);
+                                        // console.log(res.msg);
+                                        // setCoords(position.coords);
+                                    })
+                                    .catch(err => {
+                                        throw new Error(err);
+                                    })
                             },
-                            body: JSON.stringify({
-                                token: r,
-                                coords: position.coords
-                            })
-                        })
-                            .then(res => {
-                                return res.json();
-                            })
-                            .then(res => {
-                                console.log('msg from courier ride api ?', res.msg);
-                                // console.log(res.msg);
-                                // setCoords(position.coords);
-                            })
-                            .catch(err => {
-                                throw new Error(err);
-                            })
-                    },
-                    (err) => {
-                        console.log('failed to retreive user location', err);
-                    },
-                    { enableHighAccuracy: true, useSignificantChanges: true, timeout: 6000 }
-                )
+                            (err) => {
+                                console.log('failed to retreive user location', err);
+                            },
+                            { useSignificantChanges: true, timeout: 6000 }
+                        )
+                    })
+                    .catch(err => {
+                        throw new Error(err);
+                    })
             } else {
                 // do nothing when the token is empty;
+                console.log('TOKEN EMPTY : ', e);
             }
         })
 
     };
 
 
-    return (
+    return gmapKey ? (
         <View style={{ flex: 1, paddingTop: StatusBar.currentHeight, backgroundColor: 'white' }}>
             <TouchableOpacity
                 onPress={() => navigation.goBack()}
@@ -143,7 +173,11 @@ const Ride = ({ navigation }): React.ReactElement => {
 
                 <Text style={{ marginTop: 20, fontSize: 20 }}>*Catatan : Tutup halaman ini jika kamu sudah mendapatkan orderan</Text>
             </View>
+
+            <SupportSection />
         </View>
+    ) : (
+        <SplashScreen/>
     )
 }
 

@@ -9,7 +9,6 @@ import {
     Alert
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import io from 'socket.io-client';
 import { useIsFocused } from '@react-navigation/native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import { formatRupiah } from '../../utils/functionality';
@@ -17,11 +16,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useDispatch } from 'react-redux';
 import { SERVER_URL } from '../../utils/constants';
 import { ScrollView } from 'react-native-gesture-handler';
+import SupportSection from '../../Components/Support';
 
-const socket = io(SERVER_URL, {
-    "transports": ['websocket'],
-    upgrade: false
-});
 
 
 type UserData = {
@@ -32,7 +28,8 @@ type UserData = {
     courier_info: {
         balance: number
     },
-    active_order: string
+    active_order: string,
+    verified: boolean
 }
 
 
@@ -47,8 +44,10 @@ const Home = ({ navigation }) => {
             balance: 0
         },
         active_order: '',
-        fotoDiri: ''
+        fotoDiri: '',
+        verified: false
     });
+    let [userLogout, setUserLogout] = useState<string>("");
 
     let [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -71,34 +70,6 @@ const Home = ({ navigation }) => {
     const isFocused = useIsFocused();
 
     let intervalOrder: NodeJS.Timeout;
-
-
-    const test: any = async () => {
-
-
-        let body = {
-            message: {
-                data: {
-                    testing: 'HELLOOOO BROOO'
-                }
-            },
-            device_token: 'c3Kr40h6QHOX2YJwi8xCeY:APA91bGwPaFtiI3FvPBNJgFFV6kxssFJU3jnmI4mZRsVWUV0vSyrv2srpNLBpmWaHvrY9l5vAeMBVkoFAj6dy3vuDl6mvm0l0_LVIErboBmV8g9g1jSNMxVtbukqRv6TvMT3xk5wmvf4'
-        };
-
-        return await fetch(`${SERVER_URL}/testing123`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(body)
-        })
-            .then(res => {
-                console.log('berhasil ', res);
-            })
-            .catch(err => {
-                console.log('error :: ', err);
-            })
-    }
 
     useEffect(() => {
 
@@ -146,7 +117,6 @@ const Home = ({ navigation }) => {
 
 
         await AsyncStorage.getItem('LOGIN_TOKEN', async (e, result: string | undefined) => {
-            await socket.emit('userConnected', result);
             await fetch(`${SERVER_URL}/user/single/` + result, {
                 method: 'GET',
                 headers: {
@@ -157,10 +127,22 @@ const Home = ({ navigation }) => {
                     return res.json();
                 })
                 .then(res => {
-                    setTimeout(() => {
-                        setIsLoading(false);
-                    }, 2000)
-                    setUserData(res.data);
+                    if (res.data.type === "user") {
+                        Alert.alert('Pesan Sistem', 'User Biasa tidak dapat mengakses aplikasi ini', [
+                            {
+                                text: "Keluar",
+                                onPress: () => {
+                                    logoutHandler();
+                                }
+                            }
+                        ]);
+                        return;
+                    } else {
+                        setTimeout(() => {
+                            setIsLoading(false);
+                        }, 2000);
+                        setUserData(res.data);
+                    }
                 })
                 .catch(err => {
                     console.log('USER FETCH ERROR', err);
@@ -171,36 +153,50 @@ const Home = ({ navigation }) => {
 
     const logoutHandler = async () => {
 
-        await AsyncStorage.getItem('LOGIN_TOKEN', async (e, r) => {
-            let body: { token: string | undefined } = {
-                token: r
-            }
+        await AsyncStorage.removeItem('LOGIN_TOKEN');
+        setUserLogout("Jika tidak di alihkan, cukup tutup aplikasi ini dan buka lagi.");
 
-            if (r) {
-                await fetch(`${SERVER_URL}/courier/logout`, {
-                    method: 'POST',
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(body)
-                }).then(res => {
-                    return res.json()
-                })
-                    .then(async res => {
-                        if (res.msg === 'success') {
-                            await AsyncStorage.removeItem('LOGIN_TOKEN');
-                            dispatch({ type: 'LOGOUT' });
+        setTimeout(() => {
+            dispatch({ type: 'LOGOUT' });
+        }, 3000);
+    };
 
-                            await navigation.replace('landing');
-                        }
-                    })
-                    .catch(err => {
-                        throw new Error(err);
-                    })
-            }
+
+    const resendEmailVerification = async () => {
+
+        let body = {
+            email: userData.email
+        };
+
+        await fetch(`${SERVER_URL}/user/resend-verification`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body)
         })
+            .then(res => {
+                return res.json()
+            })
+            .then(res => {
+                if (res.code === 0) {
+                    Alert.alert('Pesan Sistem', res.msg);
+                } else {
+                    Alert.alert('Pesan Sistem', "Gagal mengirim ulang link verifikasi, silahkan coba lagi.", [{
+                        text: "Kirim Ulang",
+                        onPress: () => resendEmailVerification()
+                    }, {
+                        text: "OK",
+                        onPress: () => { }
+                    }]);
+                    return;
+                }
+            })
+            .catch(err => {
 
-
+                Alert.alert('Pesan Sistem', "Masalah koneksi, silahkan coba lagi");
+                return;
+            })
     }
 
     return isLoading ? (
@@ -224,10 +220,31 @@ const Home = ({ navigation }) => {
                         <Text style={{ fontSize: 25, fontWeight: 'bold', textAlign: 'center' }}>{userData.fullname}</Text>
                         <Text style={{ fontSize: 20, fontWeight: '500', textAlign: 'center' }}>{userData.no_hp}</Text>
                         <Text style={{ textAlign: 'center', fontSize: 20 }}>{userData.email}</Text>
-                        <TouchableOpacity activeOpacity={.8} onPress={() => logoutHandler()} style={{ flexDirection: 'row', padding: 10, justifyContent: 'center', alignItems: 'center' }}>
+                        <TouchableOpacity onPress={() => logoutHandler()} style={{ flexDirection: 'row', padding: 10, justifyContent: 'center', alignItems: 'center' }}>
                             <Text style={{ fontSize: 24, marginRight: 10 }}>Keluar</Text>
                             <Icon name="exit-outline" size={30} />
                         </TouchableOpacity>
+                        {
+                            userLogout ? (
+                                <Text style={{ fontSize: 18, fontWeight: 'bold', color: 'red' }}>*{userLogout}</Text>
+                            ) : null
+                        }
+                        <TouchableOpacity onPress={() => navigation.navigate('change_password', { email: userData.email })} style={{ flexDirection: 'row', padding: 10, justifyContent: 'center', alignItems: 'center' }}>
+                            <Text style={{ fontSize: 24, marginRight: 10 }}>Ubah Password</Text>
+                        </TouchableOpacity>
+
+                        {
+                            !userData.verified ? (
+                                <>
+                                    <Text style={{ marginHorizontal: 16, fontSize: 16 }}>*Klik untuk verifikasi email kamu</Text>
+                                    <View style={{ padding: 6, justifyContent: 'center', alignItems: 'center' }}>
+                                        <TouchableOpacity onPress={() => resendEmailVerification()} style={{ padding: 10, borderRadius: 6, backgroundColor: 'blue' }}>
+                                            <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 20 }}>Verifikasi Email</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </>
+                            ) : null
+                        }
                     </View>
 
                     <View style={{ padding: 10, borderRadius: 10, borderWidth: 1, flex: 1, width: '100%', alignItems: 'center' }}>
@@ -235,7 +252,13 @@ const Home = ({ navigation }) => {
                         <Text style={{ marginTop: 15, fontWeight: 'bold', letterSpacing: .5, fontSize: 35, textAlign: 'center' }}>{formatRupiah(String(userData.courier_info.balance), 'Rp. ')},-</Text>
 
                         <View style={{ flexDirection: 'row' }}>
-                            <TouchableOpacity activeOpacity={.8} onPress={() => userData.courier_info.balance === 0 ? Alert.alert('Pesan Sistem', 'Saldo mu tidak cukup untuk mendapatkan atau mencari orderan,... silahkan isi saldo mu terlebih dahulu') : navigation.navigate('order')} style={{ marginVertical: 20, padding: 25, justifyContent: 'center', alignItems: 'center', borderRadius: 15, backgroundColor: 'blue' }}>
+                            <TouchableOpacity activeOpacity={.8} onPress={() => userData.courier_info.balance === 0 ? Alert.alert('Pesan Sistem', 'Saldo mu tidak cukup untuk mendapatkan atau mencari orderan,... silahkan isi saldo mu terlebih dahulu') : !userData.verified ? Alert.alert('Pesan Sistem', 'Akun kamu belum terverifikasi, silahkan verifikasi email mu terlebih dahulu agar bisa menerima / mendapatkan orderan, klik Verifikasi untuk mengirim Link Verifikasi ke email kamu', [{
+                                text: "Verifikasi",
+                                onPress: () => resendEmailVerification()
+                            }, {
+                                text: "OK",
+                                onPress: () => { }
+                            }]) : navigation.navigate('order')} style={{ marginVertical: 20, padding: 25, justifyContent: 'center', alignItems: 'center', borderRadius: 15, backgroundColor: 'blue' }}>
                                 <Text style={{ color: 'white', fontSize: 25, fontWeight: 'bold' }}>Orderan</Text>
                             </TouchableOpacity>
                             {
@@ -248,7 +271,13 @@ const Home = ({ navigation }) => {
                         </View>
 
                         <View style={{ padding: 16, justifyContent: 'center', alignItems: 'center', flex: 1 }}>
-                            <TouchableOpacity activeOpacity={.8} onPress={() => navigation.navigate('ride')} style={{ marginVertical: 20, padding: 25, justifyContent: 'center', alignItems: 'center', borderRadius: 15, backgroundColor: 'blue' }}>
+                            <TouchableOpacity activeOpacity={.8} onPress={() => userData.courier_info.balance === 0 ? Alert.alert('Pesan Sistem', 'Saldo mu tidak cukup untuk mendapatkan atau mencari orderan,... silahkan isi saldo mu terlebih dahulu') : !userData.verified ? Alert.alert('Pesan Sistem', 'Akun kamu belum terverifikasi, silahkan verifikasi email mu terlebih dahulu agar bisa menerima / mendapatkan orderan, klik Verifikasi untuk mengirim Link Verifikasi ke email kamu', [{
+                                text: "Verifikasi",
+                                onPress: () => resendEmailVerification()
+                            }, {
+                                text: "OK",
+                                onPress: () => { }
+                            }]) : navigation.navigate('ride')} style={{ marginVertical: 20, padding: 25, justifyContent: 'center', alignItems: 'center', borderRadius: 15, backgroundColor: 'blue' }}>
                                 <Text style={{ color: 'white', fontSize: 25, fontWeight: 'bold' }}>Ride / Cari Orderan</Text>
                             </TouchableOpacity>
                             <TouchableOpacity activeOpacity={.8} onPress={() => navigation.navigate('transaction_out')} style={{ marginVertical: 20, padding: 25, justifyContent: 'center', alignItems: 'center', borderRadius: 15, backgroundColor: 'green' }}>
@@ -259,6 +288,7 @@ const Home = ({ navigation }) => {
                             </TouchableOpacity>
                         </View>
                     </View>
+                    <SupportSection />
                 </View>
             </ScrollView>
         )

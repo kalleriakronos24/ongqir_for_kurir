@@ -6,6 +6,7 @@ import {
     StatusBar,
     TouchableOpacity
 } from 'react-native';
+import SupportSection from '../../Components/Support';
 
 
 const Landing = ({ navigation }: any) => {
@@ -29,6 +30,8 @@ const Landing = ({ navigation }: any) => {
                         <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Daftar</Text>
                     </TouchableOpacity>
                 </View>
+
+               <SupportSection/>
             </View>
         </View>
     )

@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { formatRupiah } from '../../utils/functionality';
 import { SERVER_URL } from '../../utils/constants';
+import SupportSection from '../../Components/Support';
 
 
 // interface
@@ -217,6 +218,8 @@ const OrderHistory = ({ navigation, route }) => {
                                         <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold', fontSize: 16, letterSpacing: .5 }}>Back to home</Text>
                                     </TouchableOpacity>
                                 </View>
+
+                                <SupportSection/>
                             </ScrollView>
                         </>
                     )

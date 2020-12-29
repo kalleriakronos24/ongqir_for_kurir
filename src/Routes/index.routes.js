@@ -30,6 +30,7 @@ import { IndexMap, PengirimMap, PenerimaMap } from '../Screens/Map/index.map';
 import OrderHistory from '../Screens/OrderHistory/index.history';
 import { SERVER_URL } from '../utils/constants';
 import Ride from '../Screens/Ride/index.ride';
+import ChangePassword from '../Screens/ChangePassword/index.changepass';
 
 const socket = io(SERVER_URL, {
     "transports": ['websocket'],
@@ -190,22 +191,7 @@ const Route = () => {
                                 cardOverlayEnabled: false,
                                 cardOverlay: false
                             }} />
-
-
-                            { /** ???? */}
-                            <Stack.Screen name="landing" component={Landing} options={{
-                                headerShown: true,
-                                cardShadowEnabled: false,
-                                cardOverlayEnabled: false,
-                                cardOverlay: false
-                            }} />
-                            <Stack.Screen name="login" component={Login} options={{
-                                headerShown: true,
-                                cardShadowEnabled: false,
-                                cardOverlayEnabled: false,
-                                cardOverlay: false
-                            }} />
-                            <Stack.Screen name="register" component={Register} options={{
+                            <Stack.Screen name="change_password" component={ChangePassword} options={{
                                 headerShown: true,
                                 cardShadowEnabled: false,
                                 cardOverlayEnabled: false,

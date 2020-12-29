@@ -14,6 +14,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { SERVER_URL } from '../../utils/constants';
+import SupportSection from '../../Components/Support';
 
 interface Body {
     password: string,
@@ -66,7 +67,7 @@ const Login = ({ navigation }) => {
                 }
                 if (res.code === 'ERR_LOGIN_2') {
                     setIsLoginError(true);
-                    setErrorMsg('Password do not match');
+                    setErrorMsg('Password salah');
                     return;
                 }
 
@@ -131,8 +132,6 @@ const Login = ({ navigation }) => {
                             <Icon name={`eye${isPasswordHide ? '-off-' : '-'}outline`} color='blue' size={24} />
                         </TouchableOpacity>
                     </View>
-
-
                     {
                         isloginError ? (
                             <Text style={{ color: 'red', fontWeight: 'bold', fontSize: 20 }}>{errorMsg}</Text>
@@ -147,6 +146,7 @@ const Login = ({ navigation }) => {
                         <Text style={{ fontSize: 25, fontWeight: 'bold', letterSpacing: .5, color: 'white', textAlign: 'center' }}>Masuk</Text>
                     </TouchableOpacity>
                 </View>
+                <SupportSection />
             </View>
         </View>
     )

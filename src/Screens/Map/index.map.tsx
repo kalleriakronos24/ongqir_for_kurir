@@ -15,8 +15,8 @@ import MapView, { Marker, MapViewProps, } from 'react-native-maps';
 import { ModalMap } from '../../Components/Modal/map_modal';
 import MapViewDirections from 'react-native-maps-directions';
 import Geolocation, { clearWatch, stopObserving } from 'react-native-geolocation-service';
-const GOOGLE_MAPS_APIKEY = 'AIzaSyBORtT7wcFXxJFDsoerlhCiX7ZkcdX4LSk';
 
+const GOOGLE_MAPS_APIKEY = 'AIzaSyBORtT7wcFXxJFDsoerlhCiX7ZkcdX4LSk';
 
 const { width, height } = Dimensions.get('window');
 const ASPECT_RATIO = width / height;

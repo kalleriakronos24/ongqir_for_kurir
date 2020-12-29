@@ -16,6 +16,7 @@ import { useIsFocused } from '@react-navigation/native'
 import AsyncStorage from '@react-native-community/async-storage';
 import { formatRupiah, wait } from '../../utils/functionality';
 import { SERVER_URL } from '../../utils/constants';
+import SupportSection from '../../Components/Support';
 
 
 // interfaces
@@ -233,7 +234,7 @@ const Order = ({ navigation }) => {
         await AsyncStorage.getItem('LOGIN_TOKEN', async (e, r: string | undefined) => {
 
             let body = {
-                id : orderid
+                id: orderid
             }
 
             await fetch(`${SERVER_URL}/order/courier/cancel_order`, {
@@ -250,7 +251,7 @@ const Order = ({ navigation }) => {
 
                     if (res.msg === 'success canceled') {
                         Alert.alert('Pesan sistem', ' Kamu baru saja meng cancel orderan , silahkan tunggu orderan lainnya');
-                        
+
                     }
                 })
                 .catch(err => {
@@ -301,8 +302,8 @@ const Order = ({ navigation }) => {
             status: status,
             cancelable: true,
             picked_up: false,
-            payload : {
-                title : "Menuju ke tempat pengambilan barang",
+            payload: {
+                title: "Menuju ke tempat pengambilan barang",
             }
         }
 
@@ -336,7 +337,7 @@ const Order = ({ navigation }) => {
             status: status,
             cancelable: false,
             picked_up: true,
-            payload : {
+            payload: {
                 title,
             }
         }
@@ -515,6 +516,8 @@ const Order = ({ navigation }) => {
                                             </View>
                                         )
                             }
+
+                            <SupportSection />
 
                         </View>
                     ) : (

@@ -8,12 +8,14 @@ import {
     StatusBar,
     TextInput,
     ToastAndroid,
-    ScrollView
+    ScrollView,
+    Alert
 } from 'react-native';
 import { SERVER_URL } from '../../utils/constants';
 import RBSheet from "react-native-raw-bottom-sheet";
 import ImagePicker, { ImagePickerOptions, ImagePickerResponse } from 'react-native-image-picker';
 import RNFetchBlob from 'rn-fetch-blob';
+import SupportSection from '../../Components/Support';
 
 
 const Register = ({ navigation }) => {
@@ -56,6 +58,8 @@ const Register = ({ navigation }) => {
     let [email, setEmail] = useState<string>('');
     let [password, setPassword] = useState<string>('');
 
+
+    let [successVerif, setSuccessVerif] = useState<string>("");
 
     let shetRef = useRef<RBSheet>(null);
 
@@ -123,6 +127,19 @@ const Register = ({ navigation }) => {
 
     const submitRegistForm = async () => {
 
+
+
+        if(!fotoKtp.data || !fotoSTNK.data || !fotoDiri.data || !nama || !noHp || !email || !password){
+            Alert.alert('Pesan Sistem', "Harap pastikan semua field ter isi sebelum meng-klik daftar");
+
+            return;
+        }
+
+
+        if(password.length < 8){
+            Alert.alert('Pesan sistem', "Panjang password setidaknya harus 8 !")
+            return;
+        }
         let token = Math.random() * 9999 + 'abcd'
 
         // const formData = new FormData();
@@ -186,13 +203,49 @@ const Register = ({ navigation }) => {
                 return res.json();
             })
             .then(res => {
+
+                if(res.code === 1){
+                    Alert.alert('Pesan Sistem', "Email telah digunakan, silahkan pakai email lainnya");
+                    return;
+                }
                 console.log(res);
                 // navigation.push('login');
-                shetRef.current?.open()
+                shetRef.current?.open();
             })
             .catch(err => {
                 console.log('ini error ', err);
             })
+    }
+
+
+    const resendEmailVerification = async () => {
+
+        let body = {
+            email : email
+        };
+
+        await fetch(`${SERVER_URL}/user/resend-verification`, {
+            method: "POST",
+            headers : {
+                "Content-Type" : "application/json"
+            },
+            body : JSON.stringify(body)
+        })
+        .then(res => {
+            return res.json()
+        })
+        .then(res => {
+            if(res.code === 0){
+                setSuccessVerif(res.msg);
+            }
+            setSuccessVerif("Gagal mengirim ulang link verifikasi, silahkan coba lagi.");
+            return;
+        })
+        .catch(err => {
+
+            setSuccessVerif("masalah koneksi, coba lagi");
+            return;
+        })
     }
 
 
@@ -248,12 +301,13 @@ const Register = ({ navigation }) => {
                         <Text style={{ textAlign: 'center', fontWeight: 'bold', color: 'white', fontSize: 25 }}>Daftar</Text>
                     </TouchableOpacity>
                 </View>
+                <SupportSection/>
             </View>
             <RBSheet ref={shetRef}>
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <Text style={{ fontSize: 20, fontWeight: 'bold', textAlign: 'center' }}>Pendaftaran Berhasil</Text>
                     <Text style={{ marginTop: 15, color: 'blue', fontSize: 20, textAlign: 'center', fontWeight: 'bold' }}>Silahkan cek email anda dan Klik link yang kita Kirim...</Text>
-                    <TouchableOpacity onPress={() => navigation.replace('login')} style={{ marginTop: 20, backgroundColor: 'blue', padding: 15, borderRadius: 9, justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
+                    <TouchableOpacity onPress={() => resendEmailVerification()} style={{ marginTop: 20, backgroundColor: 'blue', padding: 15, borderRadius: 9, justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
                         <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold', letterSpacing: .5 }}>Resend Verification</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => navigation.replace('login')} style={{ marginTop: 20, backgroundColor: 'blue', padding: 15, borderRadius: 9, justifyContent: 'center', alignItems: 'center' }}>
