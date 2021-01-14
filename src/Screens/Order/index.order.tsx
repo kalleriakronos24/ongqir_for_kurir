@@ -124,8 +124,8 @@ const Order = ({ navigation }) => {
             const granted = await PermissionsAndroid.request(
                 PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
                 {
-                    'title': 'Onqir',
-                    'message': 'Onqir mau mengakses lokasi device mu ',
+                    'title': 'Ongqir',
+                    'message': 'Ongqir mau mengakses lokasi device mu ',
                     buttonPositive: 'OK'
                 }
             )

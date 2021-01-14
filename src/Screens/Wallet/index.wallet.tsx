@@ -8,7 +8,6 @@ import {
     ScrollView,
     StatusBar,
     ActivityIndicator,
-    Modal,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import ImagePicker, { ImagePickerOptions, ImagePickerResponse } from 'react-native-image-picker';
@@ -18,6 +17,7 @@ import { formatRupiah } from '../../utils/functionality';
 import { SERVER_URL } from '../../utils/constants';
 import RNPickerSelect from 'react-native-picker-select';
 import SupportSection from '../../Components/Support';
+import Spinner from '../../Components/Spinner/index.spinner';
 
 
 interface TransactionData {
@@ -820,27 +820,7 @@ const AddBalanceForm = ({ navigation }) => {
                     <Icon name="arrow-back-outline" size={30} />
                 </TouchableOpacity>
             </View>
-            {
-                modalVisible ? (
-                    <Modal
-                        style={{
-                            flex: 1
-                        }}
-                        animationType="fade"
-                        transparent={true}
-                        visible={modalVisible}>
-                        <View style={{
-                            flex: 1,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            padding: 16
-                        }}>
-                            <Text style={{ color: 'black', fontSize: 24, fontWeight: 'bold', textAlign: 'center' }}>Memproses data mu ke server ...</Text>
-                            <ActivityIndicator color="black" size="large" />
-                        </View>
-                    </Modal>
-                ) : null
-            }
+            <Spinner modalVisible={modalVisible}/>
             <View style={{ padding: 16, flex: 1, alignItems: "center" }}>
                 <Text style={{ fontWeight: "bold", fontSize: 17, letterSpacing: 0.5 }}>
                     Form isi Saldo / Wallet
@@ -997,7 +977,7 @@ const AddBalanceForm = ({ navigation }) => {
                         }
 
                         <Text style={{ marginTop: 10, fontWeight: 'bold', fontSize: 20 }}>
-                            *Catatan : banyak jumlah saldo yang akan kamu transfer , itu akan menjadi saldo mu untuk mencari orderan di Onqir sebagai kurir!
+                            *Catatan : banyak jumlah saldo yang akan kamu transfer , itu akan menjadi saldo mu untuk mencari orderan di Ongqir sebagai kurir!
             </Text>
                     </View>
                     <TouchableOpacity

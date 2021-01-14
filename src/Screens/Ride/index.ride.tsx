@@ -18,7 +18,7 @@ const Ride = ({ navigation }): React.ReactElement => {
     //state
     let [address, setAddress] = useState<string>("");
     let [gmapKey, setGmapKey] = useState<string | null>(null);
-
+    
     //variables
 
     //lifecycle
@@ -67,8 +67,8 @@ const Ride = ({ navigation }): React.ReactElement => {
             const granted = await PermissionsAndroid.request(
                 PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
                 {
-                    'title': 'Onqir',
-                    'message': 'Onqir mau mengakses lokasi device mu ',
+                    'title': 'Ongqir',
+                    'message': 'Ongqir mau mengakses lokasi device mu ',
                     buttonPositive: 'OK'
                 }
             )
@@ -148,7 +148,7 @@ const Ride = ({ navigation }): React.ReactElement => {
     };
 
 
-    return gmapKey ? (
+    return (
         <View style={{ flex: 1, paddingTop: StatusBar.currentHeight, backgroundColor: 'white' }}>
             <TouchableOpacity
                 onPress={() => navigation.goBack()}
@@ -176,8 +176,6 @@ const Ride = ({ navigation }): React.ReactElement => {
 
             <SupportSection />
         </View>
-    ) : (
-        <SplashScreen/>
     )
 }
 

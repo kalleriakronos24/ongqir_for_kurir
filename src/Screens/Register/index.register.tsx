@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 
 import {
     View,
@@ -7,7 +7,6 @@ import {
     TouchableOpacity,
     StatusBar,
     TextInput,
-    ToastAndroid,
     ScrollView,
     Alert
 } from 'react-native';
@@ -16,8 +15,10 @@ import RBSheet from "react-native-raw-bottom-sheet";
 import ImagePicker, { ImagePickerOptions, ImagePickerResponse } from 'react-native-image-picker';
 import RNFetchBlob from 'rn-fetch-blob';
 import SupportSection from '../../Components/Support';
+import Spinner from '../../Components/Spinner/index.spinner';
 
 
+// @ts-ignore
 const Register = ({ navigation }) => {
 
     // constants 
@@ -57,7 +58,8 @@ const Register = ({ navigation }) => {
     let [noHp, setNoHp] = useState<string>('');
     let [email, setEmail] = useState<string>('');
     let [password, setPassword] = useState<string>('');
-
+    let [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+    let [emailRespCode, setEmailRespCode] = useState<number>(0);
 
     let [successVerif, setSuccessVerif] = useState<string>("");
 
@@ -105,6 +107,7 @@ const Register = ({ navigation }) => {
     }
 
     const fotoSTNKHandler = () => {
+
         ImagePicker.launchImageLibrary(options, (response: ImagePickerResponse) => {
             if (response.didCancel) {
                 console.log('User cancelled image picker');
@@ -127,16 +130,16 @@ const Register = ({ navigation }) => {
 
     const submitRegistForm = async () => {
 
+        setIsModalVisible(true);
 
-
-        if(!fotoKtp.data || !fotoSTNK.data || !fotoDiri.data || !nama || !noHp || !email || !password){
+        if (!fotoKtp.data || !fotoSTNK.data || !fotoDiri.data || !nama || !noHp || !email || !password) {
             Alert.alert('Pesan Sistem', "Harap pastikan semua field ter isi sebelum meng-klik daftar");
 
             return;
         }
 
 
-        if(password.length < 8){
+        if (password.length < 8) {
             Alert.alert('Pesan sistem', "Panjang password setidaknya harus 8 !")
             return;
         }
@@ -204,54 +207,73 @@ const Register = ({ navigation }) => {
             })
             .then(res => {
 
-                if(res.code === 1){
+                if (res.msg === "Email Telah Digunakan") {
+                    setIsModalVisible(false)
                     Alert.alert('Pesan Sistem', "Email telah digunakan, silahkan pakai email lainnya");
                     return;
+                } else if (res.code === 1) {
+                    setIsModalVisible(false)
+                    setEmailRespCode(res.code);
+                    setSuccessVerif("Pendaftaran berhasil, klik menuju login untuk login ke aplikasi");
+                    shetRef.current?.open();
+                    return;
+                } else {
+                    setIsModalVisible(false)
+                    setSuccessVerif(res.msg);
+                    shetRef.current?.open();
                 }
-                console.log(res);
-                // navigation.push('login');
-                shetRef.current?.open();
+
             })
             .catch(err => {
-                console.log('ini error ', err);
+                setIsModalVisible(false);
+                Alert.alert('Pesan Sistem', "Masalah koneksi, silahkan coba lagi!");
+                throw new Error(err);
             })
     }
 
 
     const resendEmailVerification = async () => {
 
+        setIsModalVisible(true);
+
         let body = {
-            email : email
+            email: email
         };
 
         await fetch(`${SERVER_URL}/user/resend-verification`, {
             method: "POST",
-            headers : {
-                "Content-Type" : "application/json"
+            headers: {
+                "Content-Type": "application/json"
             },
-            body : JSON.stringify(body)
+            body: JSON.stringify(body)
         })
-        .then(res => {
-            return res.json()
-        })
-        .then(res => {
-            if(res.code === 0){
-                setSuccessVerif(res.msg);
-            }
-            setSuccessVerif("Gagal mengirim ulang link verifikasi, silahkan coba lagi.");
-            return;
-        })
-        .catch(err => {
+            .then(res => {
+                return res.json()
+            })
+            .then(res => {
+                if (res.code === 0) {
+                    setIsModalVisible(false)
+                    setSuccessVerif(res.msg);
+                }
+                setEmailRespCode(res.code);
+                setIsModalVisible(false)
+                setSuccessVerif("Gagal mengirim ulang link verifikasi, silahkan coba lagi.");
+                return;
+            })
+            .catch(err => {
+                setEmailRespCode(1);
+                setIsModalVisible(false);
+                setSuccessVerif("masalah koneksi, coba lagi");
 
-            setSuccessVerif("masalah koneksi, coba lagi");
-            return;
-        })
+                throw new Error(err);
+            })
     }
 
 
     return (
         <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingTop: StatusBar.currentHeight, paddingBottom: 50 }}>
             <StatusBar barStyle="default" backgroundColor="rgba(0,0,0,0.251)" translucent />
+            <Spinner modalVisible={isModalVisible} />
             <View style={{ padding: 16, flex: 1, paddingBottom: 100 }}>
                 <View style={{ height: 180, width: '100%', borderRadius: 10 }}>
                     <Image style={{ height: '100%', width: '100%', alignSelf: 'stretch', borderRadius: 10 }} source={require('../../Assets/logos/4.png')} />
@@ -295,21 +317,26 @@ const Register = ({ navigation }) => {
                         placeholder="Ketik ulang Password" /> */}
 
                     <View style={{ flexDirection: 'row', marginTop: 15 }}>
-                        <Text style={{ fontSize: 18, fontWeight: 'bold', textAlign: 'center' }}>Dengan mengklik Daftar, anda menyutujui Syarat dan Kententuan dan Kebijakan Privasi Onqir</Text>
+                        <Text style={{ fontSize: 18, fontWeight: 'bold', textAlign: 'center' }}>Dengan mengklik Daftar, anda menyutujui Syarat dan Kententuan dan Kebijakan Privasi Ongqir</Text>
                     </View>
                     <TouchableOpacity onPress={() => submitRegistForm()} style={{ padding: 20, borderRadius: 10, width: '100%', marginVertical: 8, backgroundColor: 'blue', marginTop: 15 }}>
                         <Text style={{ textAlign: 'center', fontWeight: 'bold', color: 'white', fontSize: 25 }}>Daftar</Text>
                     </TouchableOpacity>
                 </View>
-                <SupportSection/>
+                <SupportSection />
             </View>
             <RBSheet ref={shetRef}>
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <Text style={{ fontSize: 20, fontWeight: 'bold', textAlign: 'center' }}>Pendaftaran Berhasil</Text>
-                    <Text style={{ marginTop: 15, color: 'blue', fontSize: 20, textAlign: 'center', fontWeight: 'bold' }}>Silahkan cek email anda dan Klik link yang kita Kirim...</Text>
-                    <TouchableOpacity onPress={() => resendEmailVerification()} style={{ marginTop: 20, backgroundColor: 'blue', padding: 15, borderRadius: 9, justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
-                        <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold', letterSpacing: .5 }}>Resend Verification</Text>
-                    </TouchableOpacity>
+                    <Text style={{ marginTop: 15, color: 'blue', fontSize: 20, textAlign: 'center', fontWeight: 'bold' }}>{successVerif}</Text>
+                    {
+                        emailRespCode === 1 ? null : (
+                            <TouchableOpacity onPress={() => resendEmailVerification()} style={{ marginTop: 20, backgroundColor: 'blue', padding: 15, borderRadius: 9, justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
+                                <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold', letterSpacing: .5 }}>Resend Verification</Text>
+                            </TouchableOpacity>
+                        )
+                    }
+
                     <TouchableOpacity onPress={() => navigation.replace('login')} style={{ marginTop: 20, backgroundColor: 'blue', padding: 15, borderRadius: 9, justifyContent: 'center', alignItems: 'center' }}>
                         <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold', letterSpacing: .5 }}>Menuju Login</Text>
                     </TouchableOpacity>

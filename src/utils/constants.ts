@@ -4,10 +4,10 @@
 
 const port: number = 8000;
 const protocol: string = 'http';
-const uri: string = '192.168.43.178';
+const uri: string = '192.168.1.12';
 
 
-const ENV: string = "DEV";
+const ENV: string = "PROD";
 
 const PROD_PROTOCOL: string = 'https';
 const PROD_URI: string = 'www.ongqir-backend.com';

@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, ActivityIndicator, StatusBar, Image, ScrollView, RefreshControl, TouchableOpacity } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-community/async-storage';
-import Icon from 'react-native-vector-icons/Ionicons';
 import { formatRupiah } from '../../utils/functionality';
 import { SERVER_URL } from '../../utils/constants';
 import SupportSection from '../../Components/Support';
 
 
 // interface
-
 interface UserData {
     fullname: string,
     foto_diri: string,
@@ -45,6 +42,7 @@ interface Items {
     courier_cancel: boolean
 }
 
+// @ts-ignore
 const OrderHistory = ({ navigation, route }) => {
 
     let [isLoading, setIsLoading] = useState<boolean>(true);
@@ -60,13 +58,14 @@ const OrderHistory = ({ navigation, route }) => {
 
 
     const getUserOrder = () => {
+        
 
+        // @ts-ignore
         AsyncStorage.getItem('LOGIN_TOKEN', (e, r) => r)
             .then((res) => {
                 let body = {
                     token: res
                 };
-
                 fetch(`${SERVER_URL}/order/courier/get/done/all`, {
                     method: 'POST',
                     headers: {
@@ -104,6 +103,8 @@ const OrderHistory = ({ navigation, route }) => {
     }, [refresh]);
 
     const wait = (timeout: number) => {
+
+        // @ts-ignore
         return new Promise((resolve, reject) => {
             setTimeout(resolve, timeout);
         })
